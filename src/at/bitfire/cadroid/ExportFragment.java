@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
 
+import lombok.Cleanup;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.os.Environment;
@@ -19,7 +21,7 @@ import android.widget.TextView;
 public class ExportFragment extends Fragment {
 	public final static String TAG = "cadroid.ExportFragment";
 	
-	CertificateInfo info;
+	X509Certificate certificate;
 	boolean exported;
 	
 
@@ -37,13 +39,11 @@ public class ExportFragment extends Fragment {
 		MainActivity main = (MainActivity)getActivity();
 		main.onShowFragment(TAG);
 		
-		info = main.getCertificateInfo();
-
 		TextView tvExportStatus = (TextView)getView().findViewById(R.id.export_status),
 				 tvExportResult = (TextView)getView().findViewById(R.id.export_result);
 		
 		try {
-			String outputFile = exportCertificate(info);
+			String outputFile = exportCertificate(main.getConnectionInfo().getRootCertificate());
 			
 			exported = true;
 			tvExportStatus.setText(R.string.export_successful);
@@ -83,14 +83,10 @@ public class ExportFragment extends Fragment {
 	
 	// private methods
 	
-	private String exportCertificate(CertificateInfo cert) throws CertificateEncodingException, IOException {
-		File file = new File(Environment.getExternalStorageDirectory(), cert.getSerialNumber().toString(16) + ".crt");
-		FileOutputStream fos = new FileOutputStream(file);
-		try {
-			fos.write(cert.getEncoded());
-		} finally {
-			fos.close();
-		}
+	private String exportCertificate(X509Certificate certificate) throws CertificateEncodingException, IOException {
+		File file = new File(Environment.getExternalStorageDirectory(), certificate.getSerialNumber().toString(16) + ".crt");
+		@Cleanup FileOutputStream fos = new FileOutputStream(file);
+		fos.write(certificate.getEncoded());
 		return file.getAbsolutePath();
 	}
 

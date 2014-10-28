@@ -6,14 +6,14 @@ import java.security.cert.X509Certificate;
 import javax.net.ssl.X509TrustManager;
 
 import android.util.Log;
+import at.bitfire.cadroid.ConnectionInfo.RootCertificateType;
 
 public class InfoTrustManager implements X509TrustManager {
-	private static String TAG = "CAdroid.MyTrustManager";
+	private static String TAG = "CAdroid.InfoTrustManager";
 	
-	CertificateInfo info;
+	ConnectionInfo info;
 	
-	
-	InfoTrustManager(CertificateInfo info) {
+	InfoTrustManager(ConnectionInfo info) {
 		this.info = info;
 	}
 	
@@ -27,10 +27,8 @@ public class InfoTrustManager implements X509TrustManager {
 	public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
 		Log.d(TAG, "checkServerTrusted");
 		
-		if (chain.length != 1)
-			throw new CertificateException("Currently, only self-signed certificates are supported.");
-		
-		info.setCertificate(chain[0]);
+		info.setRootCertificateType(chain.length > 1 ? RootCertificateType.HIERARCHY : RootCertificateType.STANDALONE);
+		info.setRootCertificate(chain[chain.length - 1]);
 	}
 
 	@Override

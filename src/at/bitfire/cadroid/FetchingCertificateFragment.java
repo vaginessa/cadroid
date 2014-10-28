@@ -1,15 +1,21 @@
 package at.bitfire.cadroid;
 
+import java.net.URL;
+
 import android.app.DialogFragment;
 import android.app.LoaderManager.LoaderCallbacks;
+import android.content.AsyncTaskLoader;
+import android.content.Context;
 import android.content.Loader;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-public class FetchingCertificateFragment extends DialogFragment implements LoaderCallbacks<CertificateInfo> {
+public class FetchingCertificateFragment extends DialogFragment implements LoaderCallbacks<ConnectionInfo> {
+	private final static String TAG = "cadroid.FetchingCertificateFragment";
 	final static String EXTRA_AUTHORITY = "authority";
 	
 	@Override
@@ -18,7 +24,7 @@ public class FetchingCertificateFragment extends DialogFragment implements Loade
 		setStyle(DialogFragment.STYLE_NO_TITLE, android.R.style.Theme_Holo_Light_Dialog);
 		setCancelable(false);
 		
-		Loader<CertificateInfo> loader = getLoaderManager().initLoader(0, getArguments(), this);
+		Loader<ConnectionInfo> loader = getLoaderManager().initLoader(0, getArguments(), this);
 		if (savedInstanceState == null)		// http://code.google.com/p/android/issues/detail?id=14944
 			loader.forceLoad();
 	}
@@ -29,27 +35,54 @@ public class FetchingCertificateFragment extends DialogFragment implements Loade
 		return v;
 	}
 
+	
+	// LoaderCallbacks for LoaderManager
 
 	@Override
-	public Loader<CertificateInfo> onCreateLoader(int id, Bundle args) {
+	public Loader<ConnectionInfo> onCreateLoader(int id, Bundle args) {
 		return new CertificateInfoLoader(getActivity(), args.getString(EXTRA_AUTHORITY));
 	}
 
 	@Override
-	public void onLoadFinished(Loader<CertificateInfo> loader, CertificateInfo info) {
-		
-		if (info.getErrorMessage() == null) {
+	public void onLoadFinished(Loader<ConnectionInfo> loader, ConnectionInfo info) {
+		if (info.getException() == null) {
 			MainActivity main = (MainActivity)getActivity();
-			main.setCertificateInfo(info);
+			main.setConnectionInfo(info);
 			main.showFragment(VerifyFragment.TAG, true);
-		} else
-			Toast.makeText(getActivity(), info.getErrorMessage(), Toast.LENGTH_LONG).show();
+		} else {
+			Log.e(TAG, "Couldn't fetch certificate", info.getException());
+			Toast.makeText(getActivity(), info.getException().getMessage(), Toast.LENGTH_LONG).show();
+		}
 		
 		getDialog().dismiss();
 	}
 	
 	@Override
-	public void onLoaderReset(Loader<CertificateInfo> loader) {
+	public void onLoaderReset(Loader<ConnectionInfo> loader) {
+	}
+	
+	
+	// Loader
+	
+	private static class CertificateInfoLoader extends AsyncTaskLoader<ConnectionInfo> {
+		String authority;
+		
+		public CertificateInfoLoader(Context context, String authority) {
+			super(context);
+			this.authority = authority;
+		}
+
+		@Override
+		public ConnectionInfo loadInBackground() {
+			try {
+				// either return result with certificate info …
+				return ConnectionChecker.check(new URL("https://" + authority));
+			} catch (Exception e) {
+				// … or return the exception
+				return new ConnectionInfo(e);
+			}
+		}
+		
 	}
 
 }

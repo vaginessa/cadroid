@@ -1,5 +1,7 @@
 package at.bitfire.cadroid;
 
+import lombok.Getter;
+import lombok.Setter;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -22,9 +24,7 @@ public class MainActivity extends Activity {
 	
 	private ListView titlesList;
 	
-	private CertificateInfo certificateInfo;
-	void setCertificateInfo(CertificateInfo info) { certificateInfo = info; }
-	CertificateInfo getCertificateInfo() { return certificateInfo; }
+	@Getter @Setter private ConnectionInfo connectionInfo;
 	
 
 	@Override
@@ -37,7 +37,7 @@ public class MainActivity extends Activity {
 		String fragmentType;
 		if (savedInstanceState != null) {
 			fragmentType = savedInstanceState.getString(KEY_FRAGMENT_TAG);
-			certificateInfo = (CertificateInfo)savedInstanceState.getParcelable(KEY_CERTIFICATE_INFO);
+			connectionInfo = (ConnectionInfo)savedInstanceState.getParcelable(KEY_CERTIFICATE_INFO);
 		} else {
 			fragmentType = IntroFragment.TAG;
 			showFragment(fragmentType, false);
@@ -47,11 +47,11 @@ public class MainActivity extends Activity {
 		titlesList = (ListView)findViewById(R.id.titles_list);
 		if (titlesList != null) {
 			String[] titles = {
-					getString(R.string.intro_title),
-					"2 Fetch certificate",
-					"3 Verify certificate",
-					"4 Export",
-					"5 Import"
+					"1 " + getString(R.string.intro_title),
+					"2 " + getString(R.string.fetch_title),
+					"3 " + getString(R.string.verify_title),
+					"4 " + getString(R.string.export_title),
+					"5 " + "Import"
 			};
 			titlesList.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_activated_1, android.R.id.text1, titles));
 			titlesList.setEnabled(false);
@@ -62,7 +62,7 @@ public class MainActivity extends Activity {
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putString(KEY_FRAGMENT_TAG, activeFragmentTag);
-		outState.putParcelable(KEY_CERTIFICATE_INFO, certificateInfo);
+		outState.putParcelable(KEY_CERTIFICATE_INFO, connectionInfo);
 	}
 
 

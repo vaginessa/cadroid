@@ -1,144 +1,190 @@
 package at.bitfire.cadroid;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.lang.reflect.Array;
+import java.io.InputStream;
 import java.math.BigInteger;
-import java.security.cert.CertificateEncodingException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertPath;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.bouncycastle.asn1.x509.BasicConstraints;
-import org.bouncycastle.asn1.x509.Extensions;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
+import javax.security.auth.x500.X500Principal;
 
-import android.os.Parcel;
-import android.os.Parcelable;
+import lombok.Cleanup;
+import lombok.Getter;
 import android.util.Log;
 
-public class CertificateInfo implements Parcelable {
-	private final static String TAG = "cadroid.CertificateInfo";
+/*
+PKIX x509 v3 (RFC 5280)
+2.5.29.19 - Basic Constraints
+BasicConstraintsSyntax ::= SEQUENCE {
+	cA	BOOLEAN DEFAULT FALSE,
+	pathLenConstraint INTEGER (0..MAX) OPTIONAL
+}
+*/
 
-	String hostName;
-	boolean hostNameVerified;
+public class CertificateInfo {
+	private static final String TAG = "cadroid.CertificateInfo";
 	
-	private String errorMessage;
-	public String getErrorMessage() { return errorMessage; }
-	public void setErrorMessage(String msg) { errorMessage = msg; }
+	X509Certificate certificate;
 	
-	private String subject;
-	public String getSubject() { return subject; }
+	// @Getter would name it getCA instead of isCA
+	Boolean cA;
+	public Boolean isCA() { return cA; }
 	
-	private LinkedList<String> altSubjectNames;
-	public String[] getAltSubjectNames() { return altSubjectNames.toArray(new String[0]); }
+	@Getter Integer maxPathLength;
+	
 
-	private BigInteger serialNumber;
-	public BigInteger getSerialNumber() { return serialNumber; }
+	public CertificateInfo(X509Certificate certificate) {
+		this.certificate = certificate;
+		
+		decodeBasicConstraints();
+	}
 	
-	private Date notBefore;
-	public Date getNotBefore() { return notBefore; }
 	
-	private Date notAfter;
-	public Date getNotAfter() { return notAfter; }
+	// general info
 	
-	private boolean currentlyValid;
-	public boolean isCurrentlyValid() { return currentlyValid; }
+	public String getSubjectName() {
+		return certificate.getSubjectX500Principal().getName(X500Principal.RFC1779);
+	}
 	
-	BigInteger pathLength;
-	boolean isCA;
-
-	protected X509CertificateHolder certificate;
-	public byte[] getEncoded() throws IOException { return certificate.getEncoded(); }
-	public void setCertificate(X509Certificate certificate) {
+	public String[] getSubjectAltNames() {
 		try {
-			subject = certificate.getSubjectDN().getName();
-			serialNumber = certificate.getSerialNumber();
-			
-			altSubjectNames = new LinkedList<String>();
+			LinkedList<String> altNames = new LinkedList<String>();
 			if (certificate.getSubjectAlternativeNames() != null)
-				for (List<?> altName : certificate.getSubjectAlternativeNames()) {
-					int type = (Integer)altName.get(0);
-					Object name = altName.get(1);
-					if (name instanceof Array)
-						altSubjectNames.add(new String((byte[])name));
-					else
-						altSubjectNames.add((String)name);
+				for (List<?> asn1Name : certificate.getSubjectAlternativeNames()) {
+					int type = (Integer)asn1Name.get(0);
+					String value;
+					try {
+						value = (String)asn1Name.get(1);
+					} catch(Exception e) {
+						value = "?";
+						Log.w(TAG, "Couldn't cast alternative subject name to String", e);
+					}
+					altNames.add(value + " [" + type + "]");
 				}
-			
-			// use Bouncy Castle to parse some other details
-			JcaX509CertificateHolder certHolder = new JcaX509CertificateHolder(certificate);
-			this.certificate = certHolder;
-			
-			notBefore = certHolder.getNotBefore();
-			notAfter = certHolder.getNotAfter();
-			currentlyValid = certHolder.isValidOn(new Date());
-			
-			Extensions extensions = this.certificate.getExtensions();
-		    BasicConstraints bc = BasicConstraints.fromExtensions(extensions);
-		    isCA = bc.isCA();
-		    pathLength = bc.getPathLenConstraint();
-		} catch (CertificateEncodingException e) {
-			Log.e(TAG, "Encoding error", e);
+			return altNames.toArray(new String[0]);
 		} catch (CertificateParsingException e) {
-			Log.e(TAG, "Parsing error", e);
-		}
+			Log.w(TAG, "Couldn't parse Subject Alternative Names from certificate", e);
+			return null;
+		}		
 	}
 	
-	
-	// Parcelable
-
-	@Override
-	public int describeContents() {
-		return 0;
+	public String getSerialNumber() {
+		return certificate.getSerialNumber().toString(16);
 	}
-
-	@Override
-	public void writeToParcel(Parcel dest, int flags) {
-		dest.writeString(errorMessage);
-		
-		dest.writeString(hostName);
-		dest.writeByte(hostNameVerified ? (byte)1 : (byte)0);
-		
-		byte[] cert = null;
+	
+	public String getSignature(String algorithm) {
 		try {
-			cert = certificate.getEncoded();
-		} catch (IOException e) {
-			Log.e(TAG, "Couldn't encode certificate", e);
+			MessageDigest digest = MessageDigest.getInstance(algorithm);
+			digest.update(certificate.getEncoded());
+			String sig = "";
+			for (byte b : digest.digest())
+				sig += Integer.toHexString(b & 0xFF);
+			return sig;
+		} catch(Exception e) {
+			Log.e(TAG, "Couldn't calculate certificate digest", e);
+			return e.getMessage();
 		}
-		if (cert != null) {
-			dest.writeInt(cert.length);
-			dest.writeByteArray(cert);
-		} else
-			dest.writeInt(0);
+	}
+	
+	public Date getNotBefore() {
+		return certificate.getNotBefore();
+	}
+	
+	public Date getNotAfter() {
+		return certificate.getNotAfter();
+	}
+	
+	public boolean isCurrentlyValid() {
+		try {
+			certificate.checkValidity();
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+	
+	
+	// Basic Constraints info
+	
+	private void decodeBasicConstraints() {
+		cA = null;
+		maxPathLength = null;
+		
+		// get the DER-encoded OCTET STRING for the extension value
+		byte[] b = certificate.getExtensionValue("2.5.29.19");
+		
+		if (b == null)		// no Basic Constraints extension
+			return;
+		
+		try {
+			@Cleanup InputStream is = new ByteArrayInputStream(b);
+			
+			// it's an OCTET STRING, get the content
+			@Cleanup InputStream extension = ASN1Decoder.readOctetString(is);
+			
+			// get BasicConstraintsSyntax SEQUENCE
+			@Cleanup InputStream seqBasicConstraints = ASN1Decoder.readSequence(extension);
+			
+			// read cA flag
+			cA = false;		// DEFAULT FALSE
+			if (seqBasicConstraints.available() > 0) {
+				try {
+					cA = ASN1Decoder.readBoolean(seqBasicConstraints);
+				} catch (ASN1UnexpectedTypeException e) {
+					// no cA flag (DEFAULT FALSE)
+				}
+				
+				// read max. path length (OPTIONAL)
+				if (seqBasicConstraints.available() > 0) {
+					try {
+						BigInteger bi = ASN1Decoder.readInteger(seqBasicConstraints);
+						maxPathLength = bi.intValue();
+					} catch (ASN1UnexpectedTypeException e) {
+						Log.e(TAG, "Didn't find INTEGER when decoding pathLenConstraint", e);
+					}
+				}
+			}
+			
+		} catch (ASN1UnexpectedTypeException e) {
+			Log.e(TAG, "Unexpected ASN.1 data type when decoding Basic Constraints", e);
+		} catch (IOException e) {
+			Log.e(TAG, "I/O error when decoding Basic Constraints extension", e);
+		}
+	}
+	
+	protected CertPath singleCertificatePath(X509Certificate certificate) throws CertificateException {
+		CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+		List<X509Certificate> list = new LinkedList<X509Certificate>();
+		list.add(certificate);
+		return certFactory.generateCertPath(list);
+	}
+	
+
+	// trust info
+	
+	public boolean isTrusted() throws NoSuchAlgorithmException, KeyStoreException  {
+		TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+		tmf.init((KeyStore)null);
+		X509TrustManager tm = (X509TrustManager)tmf.getTrustManagers()[0];
+		try {
+			tm.checkServerTrusted(new X509Certificate[] { certificate }, "RSA");
+			return true;
+		} catch(CertificateException e) {
+			return false;
+		}
 	}
 
-	public static final Parcelable.Creator<CertificateInfo> CREATOR = new Parcelable.Creator<CertificateInfo>() {
-		public CertificateInfo createFromParcel(Parcel in) {
-		    CertificateInfo info = new CertificateInfo();
-		    
-			info.errorMessage = in.readString();
-			
-			info.hostName = in.readString();
-			info.hostNameVerified = in.readByte() != 0;
-			
-			byte[] cert = new byte[in.readInt()];
-			in.readByteArray(cert);
-			
-			try {
-				info.certificate = new X509CertificateHolder(cert);
-			} catch (IOException e) {
-				Log.e(TAG, "I/O exception", e);
-			}
-
-			return info;
-		}
-		
-		public CertificateInfo[] newArray(int size) {
-		    return new CertificateInfo[size];
-		}
-	};
 }

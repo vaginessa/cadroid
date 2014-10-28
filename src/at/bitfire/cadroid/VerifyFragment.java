@@ -1,14 +1,12 @@
 package at.bitfire.cadroid;
 
-import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
 import org.apache.commons.lang3.StringUtils;
 
 import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.os.Bundle;
+import android.text.Html;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -16,12 +14,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import at.bitfire.cadroid.ConnectionInfo.RootCertificateType;
 
 @SuppressLint("ValidFragment")
 public class VerifyFragment extends Fragment {
 	public static final String TAG = "cadroid.VerifyFragment";
 	
-	CertificateInfo info;
+	ConnectionInfo connectionInfo;
+	boolean mayContinue = false;
 
 	
 	@Override
@@ -39,52 +39,84 @@ public class VerifyFragment extends Fragment {
 		MainActivity main = (MainActivity)getActivity();
 		main.onShowFragment(TAG);
 		
-		info = main.getCertificateInfo();
-		//X509CertificateObject cert = info.getCertificate();
+		connectionInfo = main.getConnectionInfo();
 		
+		// show hint if chain length > 1
+		TextView tv = (TextView)v.findViewById(R.id.warning_chain_length_not_zero);
+		if (connectionInfo.getRootCertificateType() == RootCertificateType.STANDALONE)
+			tv.setVisibility(View.GONE);
+		else
+			tv.setText(Html.fromHtml(getString(R.string.chain_length_not_zero)));
 		
 		// show certificate details
+		CertificateInfo info = new CertificateInfo(connectionInfo.getRootCertificate());
 		
-		((TextView)v.findViewById(R.id.cert_cn)).setText(info.getSubject());
+		((TextView)v.findViewById(R.id.cert_cn)).setText(info.getSubjectName());
 		
-		String altSubjNames = (info.getAltSubjectNames().length > 0) ?
-				StringUtils.join(info.getAltSubjectNames()) : "n/a";
-		((TextView)v.findViewById(R.id.cert_altsubjnames)).setText(altSubjNames);
+		String[] subjAltNames = info.getSubjectAltNames();
+		((TextView)v.findViewById(R.id.cert_altsubjnames)).setText(
+			(subjAltNames.length > 0) ? StringUtils.join(subjAltNames, ", ") : "—"
+		);
 		
-		String serialNo = info.getSerialNumber().toString(16);
-		((TextView)v.findViewById(R.id.cert_serial)).setText(serialNo);
+		((TextView)v.findViewById(R.id.cert_serial)).setText(info.getSerialNumber());
 
-		((TextView)v.findViewById(R.id.cert_sig_sha1)).setText(getSignature(info, "SHA-1"));
-		((TextView)v.findViewById(R.id.cert_sig_md5)).setText(getSignature(info, "MD5"));
+		((TextView)v.findViewById(R.id.cert_sig_sha1)).setText(info.getSignature("SHA-1"));
+		((TextView)v.findViewById(R.id.cert_sig_md5)).setText(info.getSignature("MD5"));
 		
 		((TextView)v.findViewById(R.id.cert_valid_from)).setText(info.getNotBefore().toString());
 		((TextView)v.findViewById(R.id.cert_valid_until)).setText(info.getNotAfter().toString());
 
 		String basicConstraintsInfo;
-		if (info.isCA) {
-			basicConstraintsInfo = "CA:TRUE, " + ((info.pathLength == null) ?
-					"unlimited path length" : "max path length: " + info.pathLength);
-		} else
-			basicConstraintsInfo = "n/a or CA:FALSE";
+		if (info.isCA() == null)
+			basicConstraintsInfo = getString(R.string.basic_constraints_not_present);
+		else {
+			if (info.isCA()) {
+				basicConstraintsInfo = getString(R.string.is_a_ca,
+					((info.getMaxPathLength() != null) ? info.getMaxPathLength() : "∞"));
+			} else
+				basicConstraintsInfo = getString(R.string.is_not_a_ca);
+		}
 		((TextView)v.findViewById(R.id.cert_basic_constraints)).setText(basicConstraintsInfo);
 		
 		
-		// show alerts
+		// show/hide alerts (they're VISIBLE by default)
+		
+		mayContinue = true;
 		
 		// host name not matching
 		TextView tvHostnameNotMatching = (TextView)v.findViewById(R.id.cert_hostname_not_matching);
-		if (info.hostNameVerified)
+		if (connectionInfo.isHostNameMatching())
 			tvHostnameNotMatching.setVisibility(View.GONE);
 		else {
-			tvHostnameNotMatching.setText(getResources().getString(R.string.hostname_not_matching, info.hostName));
-			tvHostnameNotMatching.setVisibility(View.VISIBLE);
+			mayContinue = false;
+			tvHostnameNotMatching.setText(getResources().getString(R.string.alert_hostname_not_matching, connectionInfo.getHostName()));
 		}
 		
 		// expired / not yet valid
-		v.findViewById(R.id.cert_currently_not_valid).setVisibility(info.isCurrentlyValid() ? View.GONE : View.VISIBLE);
+		if (info.isCurrentlyValid())
+			v.findViewById(R.id.cert_currently_not_valid).setVisibility(View.GONE);
+		else
+			mayContinue = false;
 		
 		// CA flag not set
-		v.findViewById(R.id.cert_is_not_a_ca).setVisibility(info.isCA ? View.GONE : View.VISIBLE);
+		TextView tvAlertCA = (TextView)v.findViewById(R.id.cert_is_not_a_ca);
+		if (info.isCA() != null && info.isCA())
+			tvAlertCA.setVisibility(View.GONE);
+		else {
+			mayContinue = false;
+			tvAlertCA.setText(Html.fromHtml(getString(R.string.alert_is_not_a_ca)));
+		}
+		
+		// already trusted?
+		try {
+			if (info.isTrusted())
+				mayContinue = false;
+			else
+				v.findViewById(R.id.cert_already_trusted).setVisibility(View.GONE);
+		} catch (Exception e) {
+			Log.e(TAG, "Couldn't determine trust status of certificate", e);
+			mayContinue = false;
+		}
 	}
 
 	
@@ -97,10 +129,7 @@ public class VerifyFragment extends Fragment {
 	
 	@Override
 	public void onPrepareOptionsMenu(Menu menu) {
-		boolean ok = false;
-		if (info != null)
-			ok = info.hostNameVerified && info.isCA;
-		menu.findItem(R.id.next).setEnabled(ok);
+		menu.findItem(R.id.next).setEnabled(mayContinue);
 	}
 	
 	@Override
@@ -114,23 +143,4 @@ public class VerifyFragment extends Fragment {
 		}
 		return true;
 	}
-
-	
-	// private methods
-	
-	private String getSignature(CertificateInfo cert, String algorithm) {
-		try {
-			MessageDigest digest = MessageDigest.getInstance(algorithm);
-			digest.update(cert.getEncoded());
-			String sig = "";
-			for (byte b : digest.digest())
-				sig += Integer.toHexString(b & 0xFF);
-			return sig;
-		} catch (NoSuchAlgorithmException e) {
-			return "(algorithm not available on device)";
-		} catch (IOException e) {
-			return "(couldn't encode certificate)";
-		}
-	}
-	
 }

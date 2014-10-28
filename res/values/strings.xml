@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="app_name">CAdroid</string>
+    <string name="menu_item_next">Next</string>
     
-    <string name="intro_title">1 Intro</string>
+    <string name="intro_title">Intro</string>
     <string name="intro_text"><![CDATA[
         <h1>Welcome to CAdroid!</h1>
         
-        <p>This app is intended to assist you in importing your self-signed certificate
-        to your Android device.</p>
+        <p>CAdroid is intended to assist you in importing your self-signed certificate (standalone
+        or own CA with sub-certificates) to your Android device.</p>
         
         <h1>How does it work?</h1>
         
-        <p>After you enter the host name of your HTTPS site, its certificate will be
-        extracted and shown to you. Possible mistakes that may prevent successful import
+        <p>After you enter the host name of your HTTPS site, the certificate will be
+        extracted from the certificate chain sent by the server and shown to you. Possible
+        mistakes that may prevent successful certificate import or usage
         will be detected and displayed. As soon as you have verified the certificate by
         its details and fingerprints, it will be exported into a .crt file.</p>
         
@@ -37,15 +38,43 @@
 	    that are downloaded via these services.</p>
         
     ]]></string>
-    <string name="menu_item_next">Next</string>
+    
+    <string name="fetch_title">Fetch certificate</string>
     <string name="fetch_which_url">Which URL shall the certificate be fetched from?</string>
+    <string name="fetch">Fetch</string>
     <string name="querying_server">Querying server…</string>
     
-    <string name="hostname_not_matching">Host name \"%1$s\" doesn\'t match certificate subject (according to BrowserCompatHostnameVerifier)!</string>
-    <string name="currently_not_valid">Certificate has expired or is not yet valid!</string>
-    <string name="is_not_a_ca">The CA flag in the Basic Contraints extension is not set although Android
-        requires it! Android would import the certificate without showing an error, but it wouldn\'t appear in the list.</string>
-        
+    <string name="verify_title">Verify certificate</string>
+    <string name="chain_length_not_zero"><![CDATA[
+        The certificate chain contains more than one certificate. In this case, using
+        CAdroid makes only sense if your organization is its own CA and issues certificates.<br/>
+        The last certificate of the received chain is shown below. If you\'re not expecting this certificate,
+        please check your certificate chain. Multiple trust paths are not supported by CAdroid.
+    ]]></string>
+    <string name="certificate_details">Certificate details</string>
+    <string name="subject_dn">Subject (DN):</string>
+    <string name="alternative_subject_names">Alternative subject names:</string>
+    <string name="serial_number">Serial number:</string>
+    <string name="signature_sha1">Signature (SHA1):</string>
+    <string name="signature_md5">Signature (MD5):</string>
+    <string name="valid_from">Valid from:</string>
+    <string name="valid_until">Valid until:</string>
+    <string name="basic_constraints">Basic Constraints extension:</string>
+    <string name="is_a_ca">Is a CA (may issue certificates), max. path length: %s</string>
+    <string name="is_not_a_ca">Is not a CA (must not issue certificates)</string>
+    <string name="basic_constraints_not_present">Basic Constraints extension not present, thus no CA flag</string>
+    <string name="alert_hostname_not_matching">The certificate is not issued for \"%1$s\" (host name taken from the URL). Use the correct host name or change the subject. You may also use Alternative Subject Names.</string>
+    <string name="alert_currently_not_valid">The certificate has expired or is not yet valid!</string>
+    <string name="alert_is_not_a_ca"><![CDATA[
+        X.509 v3+ certificates may contain extensions. One of these extensions is the Basic Constraints extension.
+        It contains a CA flag and optionally, a path length constraint. Android will only accept CA certificates when they have a CA flag set to TRUE.
+        Otherwise, it\'s assumed that this CA mustn\'t issue certificates, not even for itself (self-signed).<br/>
+        The CA flag of this certificate is not set or FALSE, so Android would import the certificate without showing an
+        error, but it wouldn\'t appear in the list and wouldn\'t be usable.
+    ]]></string>
+    <string name="alert_already_trusted">This certificate is already trusted (locally). There\'s no need to import it.</string>
+    
+    <string name="export_title">Export certificate</string>
     <string name="export_successful">The certificate has been exported. Remember the file name because you may have to select it in the next step:</string>
     <string name="export_failed">The certificate couldn\'t be exported!</string>
         
@@ -62,9 +91,11 @@
         (<a href="https://code.google.com/p/android/issues/detail?id=62644">Android bug #62644</a>).</p>
         
         <p>4. After installing the certificate, you can verify whether it worked by using \"Trusted credentials
-        (Display trusted CA certificates)\" in Settings (Security). Your self-signed CA should appear in the \"User\"
-        tab. Congratulations!</p>
+        (Display trusted CA certificates)\" in Settings (Security). Your CA should appear in the \"User\"
+        tab.</p>
     ]]></string>
+    <string name="certificate_not_yet_imported">The certificate has not been imported successfully and won\'t be trusted yet.</string>
+    <string name="certificate_imported">The certificate has been imported successfully. You may now use any Android app like DAVdroid or the stock email app to connect to this host.</string>
     <string name="open_settings">Open Settings</string>
     <string name="menu_help">Help</string>
     
