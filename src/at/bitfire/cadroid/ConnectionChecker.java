@@ -26,6 +26,7 @@ public class ConnectionChecker {
 		HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
 		HttpsURLConnection.setDefaultHostnameVerifier(new InfoHostnameVerifier(info));
 		
+		Log.i(TAG, "Connecting to URL: " + url);
 		@Cleanup("disconnect") HttpsURLConnection urlConnection = (HttpsURLConnection)url.openConnection();
 
 		try {

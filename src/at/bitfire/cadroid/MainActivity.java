@@ -51,7 +51,7 @@ public class MainActivity extends Activity {
 					"2 " + getString(R.string.fetch_title),
 					"3 " + getString(R.string.verify_title),
 					"4 " + getString(R.string.export_title),
-					"5 " + "Import"
+					"5 " + getString(R.string.import_title)
 			};
 			titlesList.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_activated_1, android.R.id.text1, titles));
 			titlesList.setEnabled(false);

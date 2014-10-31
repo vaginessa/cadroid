@@ -77,7 +77,8 @@
     <string name="export_title">Export certificate</string>
     <string name="export_successful">The certificate has been exported. Remember the file name because you may have to select it in the next step:</string>
     <string name="export_failed">The certificate couldn\'t be exported!</string>
-        
+    
+    <string name="import_title">Import certificate</string>
     <string name="import_text"><![CDATA[
         <p>The certificate has been stored on your "external storage". Now you can import it to
         your Android device using Android Settings (Security):</p>

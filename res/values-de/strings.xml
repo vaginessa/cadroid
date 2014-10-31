@@ -79,6 +79,7 @@
     <string name="export_successful">Das Zertifikat wurde exportiert. Merken Sie sich den Dateinamen (er könnte im nächsten Schritt verlangt werden):</string>
     <string name="export_failed">Das Zertifikat konnte nicht exportiert werden!</string>
         
+    <string name="import_title">Zertifikat importieren</string>
     <string name="import_text"><![CDATA[
         <p>Das Zertifikat wurde auf Ihrem "externen Speicher" abgelegt. Sie können es nun über den Android
         Einstellungsdialog, Punkt \"Sicherheit\" importieren:</p>
