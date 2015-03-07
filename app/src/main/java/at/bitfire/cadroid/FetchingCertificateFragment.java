@@ -31,8 +31,7 @@ public class FetchingCertificateFragment extends DialogFragment implements Loade
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View v = inflater.inflate(R.layout.frag_query_server, container, false);
-		return v;
+		return inflater.inflate(R.layout.frag_query_server, container, false);
 	}
 
 	

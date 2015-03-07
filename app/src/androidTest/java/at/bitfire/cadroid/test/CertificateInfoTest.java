@@ -11,6 +11,7 @@ import android.content.res.AssetManager;
 import android.test.InstrumentationTestCase;
 import at.bitfire.cadroid.CertificateInfo;
 import at.bitfire.cadroid.ConnectionInfo;
+import lombok.Cleanup;
 
 public class CertificateInfoTest extends InstrumentationTestCase {
 	private AssetManager assetManager;
@@ -35,14 +36,9 @@ public class CertificateInfoTest extends InstrumentationTestCase {
 	}
 	
 	protected CertificateInfo loadCertificateInfo(String assetFileName) throws IOException, CertificateException {
-		InputStream is = null;
-		try {
-			is = assetManager.open(assetFileName);
-			X509Certificate rootGTECyberTrust = (X509Certificate)certificateFactory.generateCertificate(is);
-			return new CertificateInfo(rootGTECyberTrust);
-		} finally {
-			is.close();
-		}
+		@Cleanup InputStream is = assetManager.open(assetFileName);
+		X509Certificate rootGTECyberTrust = (X509Certificate)certificateFactory.generateCertificate(is);
+		return new CertificateInfo(rootGTECyberTrust);
 	}
 	
 	

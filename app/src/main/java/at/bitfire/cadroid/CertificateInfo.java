@@ -1,13 +1,12 @@
 package at.bitfire.cadroid;
 
+import android.util.Log;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertPath;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -17,15 +16,10 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
 import javax.security.auth.x500.X500Principal;
 
 import lombok.Cleanup;
 import lombok.Getter;
-import android.util.Log;
-
-import org.apache.commons.lang3.StringUtils;
 
 /*
 PKIX x509 v3 (RFC 5280)
