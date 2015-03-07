@@ -1,7 +1,5 @@
 package at.bitfire.cadroid;
 
-import org.apache.commons.lang3.StringUtils;
-
 import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.os.Bundle;
@@ -14,7 +12,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import at.bitfire.cadroid.ConnectionInfo.RootCertificateType;
+
+import org.apache.commons.lang3.StringUtils;
+
+import java.security.cert.X509Certificate;
 
 @SuppressLint("ValidFragment")
 public class VerifyFragment extends Fragment {
@@ -35,21 +36,15 @@ public class VerifyFragment extends Fragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		View v = getView();
-		
+
 		MainActivity main = (MainActivity)getActivity();
 		main.onShowFragment(TAG);
-		
+
 		connectionInfo = main.getConnectionInfo();
-		
-		// show hint if chain length > 1
-		TextView tv = (TextView)v.findViewById(R.id.warning_chain_length_not_zero);
-		if (connectionInfo.getRootCertificateType() == RootCertificateType.STANDALONE)
-			tv.setVisibility(View.GONE);
-		else
-			tv.setText(Html.fromHtml(getString(R.string.chain_length_not_zero)));
-		
+
 		// show certificate details
-		CertificateInfo info = new CertificateInfo(connectionInfo.getRootCertificate());
+		X509Certificate cert = connectionInfo.getCertificates()[main.getIdxSelectedCertificate()];
+		CertificateInfo info = new CertificateInfo(cert);
 		
 		((TextView)v.findViewById(R.id.cert_cn)).setText(info.getSubjectName());
 		
@@ -80,18 +75,8 @@ public class VerifyFragment extends Fragment {
 		
 		
 		// show/hide alerts (they're VISIBLE by default)
-		
 		mayContinue = true;
-		
-		// host name not matching
-		TextView tvHostnameNotMatching = (TextView)v.findViewById(R.id.cert_hostname_not_matching);
-		if (connectionInfo.isHostNameMatching())
-			tvHostnameNotMatching.setVisibility(View.GONE);
-		else {
-			mayContinue = false;
-			tvHostnameNotMatching.setText(getResources().getString(R.string.alert_hostname_not_matching, connectionInfo.getHostName()));
-		}
-		
+
 		// expired / not yet valid
 		if (info.isCurrentlyValid())
 			v.findViewById(R.id.cert_currently_not_valid).setVisibility(View.GONE);
@@ -103,18 +88,7 @@ public class VerifyFragment extends Fragment {
 		if (info.isCA() != null && info.isCA())
 			tvAlertCA.setVisibility(View.GONE);
 		else {
-			mayContinue = false;
 			tvAlertCA.setText(Html.fromHtml(getString(R.string.alert_is_not_a_ca)));
-		}
-		
-		// already trusted?
-		try {
-			if (info.isTrusted())
-				mayContinue = false;
-			else
-				v.findViewById(R.id.cert_already_trusted).setVisibility(View.GONE);
-		} catch (Exception e) {
-			Log.e(TAG, "Couldn't determine trust status of certificate", e);
 			mayContinue = false;
 		}
 	}

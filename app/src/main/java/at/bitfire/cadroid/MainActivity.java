@@ -19,13 +19,15 @@ public class MainActivity extends Activity {
 	
 	private final static String
 		KEY_FRAGMENT_TAG = "fragment_tag",
-		KEY_CERTIFICATE_INFO = "certificate_info";
+		KEY_CERTIFICATE_INFO = "certificate_info",
+		KEY_CERTIFICATE_SELECTED_IDX = "certificate_idx";
 	private String activeFragmentTag;
 	
 	private ListView titlesList;
 	
 	@Getter @Setter private ConnectionInfo connectionInfo;
-	
+	@Getter @Setter private int idxSelectedCertificate;
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +40,7 @@ public class MainActivity extends Activity {
 		if (savedInstanceState != null) {
 			fragmentType = savedInstanceState.getString(KEY_FRAGMENT_TAG);
 			connectionInfo = (ConnectionInfo)savedInstanceState.getParcelable(KEY_CERTIFICATE_INFO);
+			idxSelectedCertificate = savedInstanceState.getInt(KEY_CERTIFICATE_SELECTED_IDX);
 		} else {
 			fragmentType = IntroFragment.TAG;
 			showFragment(fragmentType, false);
@@ -47,11 +50,12 @@ public class MainActivity extends Activity {
 		titlesList = (ListView)findViewById(R.id.titles_list);
 		if (titlesList != null) {
 			String[] titles = {
-					"1 " + getString(R.string.intro_title),
-					"2 " + getString(R.string.fetch_title),
-					"3 " + getString(R.string.verify_title),
-					"4 " + getString(R.string.export_title),
-					"5 " + getString(R.string.import_title)
+					getString(R.string.intro_title),
+					getString(R.string.fetch_title),
+					getString(R.string.select_title),
+					getString(R.string.verify_title),
+					getString(R.string.export_title),
+					getString(R.string.import_title)
 			};
 			titlesList.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_activated_1, android.R.id.text1, titles));
 			titlesList.setEnabled(false);
@@ -63,6 +67,7 @@ public class MainActivity extends Activity {
 		super.onSaveInstanceState(outState);
 		outState.putString(KEY_FRAGMENT_TAG, activeFragmentTag);
 		outState.putParcelable(KEY_CERTIFICATE_INFO, connectionInfo);
+		outState.putInt(KEY_CERTIFICATE_SELECTED_IDX, idxSelectedCertificate);
 	}
 
 
@@ -74,6 +79,8 @@ public class MainActivity extends Activity {
 			nextFragment = new IntroFragment();
 		else if (FetchFragment.TAG.equals(tag))
 			nextFragment = new FetchFragment();
+		else if (SelectFragment.TAG.equals(tag))
+			nextFragment = new SelectFragment();
 		else if (VerifyFragment.TAG.equals(tag))
 			nextFragment = new VerifyFragment();
 		else if (ExportFragment.TAG.equals(tag))
@@ -101,12 +108,14 @@ public class MainActivity extends Activity {
 				position = 0;
 			else */ if (FetchFragment.TAG.equals(tag))
 				position = 1;
-			else if (VerifyFragment.TAG.equals(tag))
+			else if (SelectFragment.TAG.equals(tag))
 				position = 2;
-			else if (ExportFragment.TAG.equals(tag))
+			else if (VerifyFragment.TAG.equals(tag))
 				position = 3;
-			else if (ImportFragment.TAG.equals(tag))
+			else if (ExportFragment.TAG.equals(tag))
 				position = 4;
+			else if (ImportFragment.TAG.equals(tag))
+				position = 5;
 			titlesList.setItemChecked(position, true);
 		}
 	}

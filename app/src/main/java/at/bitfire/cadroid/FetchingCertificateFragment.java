@@ -15,7 +15,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 public class FetchingCertificateFragment extends DialogFragment implements LoaderCallbacks<ConnectionInfo> {
-	private final static String TAG = "cadroid.FetchingCertificateFragment";
+	private final static String TAG = "cadroid.Fetch";
 	final static String EXTRA_AUTHORITY = "authority";
 	
 	@Override
@@ -48,7 +48,7 @@ public class FetchingCertificateFragment extends DialogFragment implements Loade
 		if (info.getException() == null) {
 			MainActivity main = (MainActivity)getActivity();
 			main.setConnectionInfo(info);
-			main.showFragment(VerifyFragment.TAG, true);
+			main.showFragment(SelectFragment.TAG, true);
 		} else {
 			Log.e(TAG, "Couldn't fetch certificate", info.getException());
 			Toast.makeText(getActivity(), info.getException().getMessage(), Toast.LENGTH_LONG).show();
@@ -76,7 +76,7 @@ public class FetchingCertificateFragment extends DialogFragment implements Loade
 		public ConnectionInfo loadInBackground() {
 			try {
 				// either return result with certificate info …
-				return ConnectionChecker.check(new URL("https://" + authority));
+				return ConnectionInfo.fetch(new URL("https://" + authority));
 			} catch (Exception e) {
 				// … or return the exception
 				return new ConnectionInfo(e);

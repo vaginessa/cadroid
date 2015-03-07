@@ -25,6 +25,8 @@ import lombok.Cleanup;
 import lombok.Getter;
 import android.util.Log;
 
+import org.apache.commons.lang3.StringUtils;
+
 /*
 PKIX x509 v3 (RFC 5280)
 2.5.29.19 - Basic Constraints
@@ -90,8 +92,14 @@ public class CertificateInfo {
 			MessageDigest digest = MessageDigest.getInstance(algorithm);
 			digest.update(certificate.getEncoded());
 			String sig = "";
-			for (byte b : digest.digest())
-				sig += Integer.toHexString(b & 0xFF);
+			boolean first = true;
+			for (byte b : digest.digest()) {
+				if (!first)
+					sig += ":";
+				else
+					first = false;
+				sig += String.format("%02X", b & 0xFF);
+			}
 			return sig;
 		} catch(Exception e) {
 			Log.e(TAG, "Couldn't calculate certificate digest", e);
@@ -170,21 +178,6 @@ public class CertificateInfo {
 		List<X509Certificate> list = new LinkedList<X509Certificate>();
 		list.add(certificate);
 		return certFactory.generateCertPath(list);
-	}
-	
-
-	// trust info
-	
-	public boolean isTrusted() throws NoSuchAlgorithmException, KeyStoreException  {
-		TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-		tmf.init((KeyStore)null);
-		X509TrustManager tm = (X509TrustManager)tmf.getTrustManagers()[0];
-		try {
-			tm.checkServerTrusted(new X509Certificate[] { certificate }, "RSA");
-			return true;
-		} catch(CertificateException e) {
-			return false;
-		}
 	}
 
 }

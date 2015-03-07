@@ -8,17 +8,8 @@
    	    android:layout_height="wrap_content"
    	    android:orientation="vertical"
    	    android:useDefaultMargins="true" >
-   	    
-	    <TextView
-	        android:id="@+id/warning_chain_length_not_zero"
-		    android:layout_width="fill_parent"
-		    android:layout_height="wrap_content"
-	        android:layout_gravity="left"
-		    android:layout_marginBottom="20dp"
-	        android:text="@string/chain_length_not_zero"
-	        android:textAppearance="?android:attr/textAppearanceMedium" />
-   	    	    
-		<TextView
+
+        <TextView
 		    android:layout_width="fill_parent"
 		    android:layout_height="wrap_content"
 		    android:layout_gravity="left"
@@ -148,21 +139,9 @@
 		    android:layout_marginBottom="10dp"
 		    android:layout_gravity="left"
 		    android:textAppearance="?android:attr/textAppearanceMedium" />
-	
-		        
-	    <TextView
-	        android:id="@+id/cert_hostname_not_matching"
-		    android:layout_width="fill_parent"
-		    android:layout_height="wrap_content"
-	        android:layout_gravity="left"
-	        android:layout_marginBottom="10dp"
-	        android:text="@string/alert_hostname_not_matching"
-	        android:textAppearance="?android:attr/textAppearanceMedium"
-	        android:drawableLeft="@drawable/alerts_and_states_warning"
-	        android:drawablePadding="10dp"
-	        android:padding="10dp" />
-	
-	    <TextView
+
+
+        <TextView
 	        android:id="@+id/cert_currently_not_valid"
 		    android:layout_width="fill_parent"
 		    android:layout_height="wrap_content"
@@ -170,7 +149,6 @@
 	        android:layout_marginBottom="10dp"
 	        android:text="@string/alert_currently_not_valid"
 	        android:textAppearance="?android:attr/textAppearanceMedium"
-	        android:drawableLeft="@drawable/alerts_and_states_warning"
 	        android:drawablePadding="10dp"
 	        android:padding="10dp" />
 	
@@ -182,21 +160,9 @@
 	        android:layout_marginBottom="10dp"
 	        android:text="@string/alert_is_not_a_ca"
 	        android:textAppearance="?android:attr/textAppearanceMedium"
-	        android:drawableLeft="@drawable/alerts_and_states_warning"
+	        android:drawableLeft="@drawable/ic_action_error"
 	        android:drawablePadding="10dp"
 	        android:padding="10dp" />
-	    
-	    <TextView
-	        android:id="@+id/cert_already_trusted"
-		    android:layout_width="fill_parent"
-		    android:layout_height="wrap_content"
-	        android:layout_gravity="left"
-	        android:layout_marginBottom="10dp"
-	        android:text="@string/alert_already_trusted"
-	        android:textAppearance="?android:attr/textAppearanceMedium"
-	        android:drawableLeft="@drawable/alerts_and_states_warning"
-	        android:drawablePadding="10dp"
-	        android:padding="10dp" />
-	    
+
     </LinearLayout>
 </ScrollView>

@@ -43,7 +43,8 @@ public class ExportFragment extends Fragment {
 				 tvExportResult = (TextView)getView().findViewById(R.id.export_result);
 		
 		try {
-			String outputFile = exportCertificate(main.getConnectionInfo().getRootCertificate());
+			X509Certificate cert = main.getConnectionInfo().getCertificates()[main.getIdxSelectedCertificate()];
+			String outputFile = exportCertificate(cert);
 			
 			exported = true;
 			tvExportStatus.setText(R.string.export_successful);

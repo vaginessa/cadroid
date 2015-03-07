@@ -1,13 +1,29 @@
 package at.bitfire.cadroid;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
+import lombok.Cleanup;
 import lombok.Getter;
 import lombok.Setter;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 
 public class ConnectionInfo implements Parcelable {
+	private final static String TAG = "cadroid.Fetch";
 	
 	ConnectionInfo() { }
 
@@ -19,18 +35,61 @@ public class ConnectionInfo implements Parcelable {
 	ConnectionInfo(Exception exception) { this.exception = exception; }
 	
 	// certificate details
-	public enum RootCertificateType {
-		HIERARCHY,		// part of a hierarchy (chain length > 1)
-		STANDALONE		// self-signed (chain length = 1)
-	}
-	@Getter @Setter private RootCertificateType rootCertificateType;
-	
-	@Getter @Setter private X509Certificate rootCertificate;
+	@Getter @Setter private X509Certificate[] certificates;
 	
 	// verification results
 	@Getter @Setter private boolean hostNameMatching;
 
-	
+
+	// methods
+
+	public static ConnectionInfo fetch(URL url) throws IOException, NoSuchAlgorithmException, KeyManagementException {
+		ConnectionInfo info = new ConnectionInfo();
+
+		SSLContext sc = SSLContext.getInstance("TLS");
+		InfoTrustManager tm = new InfoTrustManager(info);
+		sc.init(null, new X509TrustManager[] { tm }, null);
+
+		HttpsURLConnection.setFollowRedirects(false);
+		HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+		HttpsURLConnection.setDefaultHostnameVerifier(new InfoHostnameVerifier(info));
+
+		Log.i(TAG, "Connecting to URL: " + url);
+		@Cleanup("disconnect") HttpsURLConnection urlConnection = (HttpsURLConnection)url.openConnection();
+		urlConnection.setConnectTimeout(5000);
+		urlConnection.setReadTimeout(20000);
+
+		try {
+			@Cleanup InputStream in = urlConnection.getInputStream();
+
+			// read one byte to make sure the connection has been established
+			@SuppressWarnings("unused")
+			int c = in.read();
+		} catch(IOException e) {
+			String httpStatus = urlConnection.getHeaderField(null);
+			if (httpStatus != null)
+				Log.i(TAG, "HTTP error when fetching resource: " + httpStatus + " (ignoring)");
+			else
+				throw e;
+		}
+
+		return info;
+	}
+
+	public boolean isTrusted() throws NoSuchAlgorithmException, KeyStoreException {
+		TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+		tmf.init((KeyStore)null);
+		X509TrustManager tm = (X509TrustManager)tmf.getTrustManagers()[0];
+		try {
+			tm.checkServerTrusted(certificates, certificates[0].getPublicKey().getAlgorithm());
+			return true;
+		} catch(CertificateException e) {
+			return false;
+		}
+	}
+
+
+
 	// Parcelable
 	
 	@Override
@@ -42,8 +101,7 @@ public class ConnectionInfo implements Parcelable {
 	public void writeToParcel(Parcel dest, int flags) {
 		dest.writeString(hostName);
 		dest.writeSerializable(exception);
-		dest.writeSerializable(rootCertificateType);
-		dest.writeSerializable(rootCertificate);
+		dest.writeSerializable(certificates);
 		dest.writeByte(hostNameMatching ? (byte)1 : (byte)0);
 	}
 
@@ -53,8 +111,7 @@ public class ConnectionInfo implements Parcelable {
 			ConnectionInfo info = new ConnectionInfo();
 			info.hostName = in.readString();
 			info.exception = (Exception)in.readSerializable();
-			info.rootCertificateType = (RootCertificateType)in.readSerializable();
-			info.rootCertificate = (X509Certificate)in.readSerializable();
+			info.certificates = (X509Certificate[])in.readSerializable();
 			info.hostNameMatching = in.readByte() == 1;
 			return info;
 		}

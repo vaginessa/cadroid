@@ -3,6 +3,7 @@ package at.bitfire.cadroid;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
@@ -15,9 +16,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.security.cert.X509Certificate;
+
 public class ImportFragment extends Fragment {
 	public final static String TAG = "cadroid.ImportFragment";
-	
+
+	ConnectionInfo connectionInfo;
 	CertificateInfo certificateInfo;
 	TextView tvStatus;
 	boolean imported;
@@ -43,17 +47,20 @@ public class ImportFragment extends Fragment {
 		
 		MainActivity main = (MainActivity)activity;
 		main.onShowFragment(TAG);
-		
-		certificateInfo = new CertificateInfo(main.getConnectionInfo().getRootCertificate());
 	}
 	
 	@Override
 	public void onResume() {
 		super.onResume();
-		
+
+		MainActivity main = (MainActivity)getActivity();
+		connectionInfo = main.getConnectionInfo();
+		X509Certificate cert = connectionInfo.getCertificates()[main.getIdxSelectedCertificate()];
+		certificateInfo = new CertificateInfo(cert);
+
 		imported = false;
 		try {
-			imported = certificateInfo.isTrusted();
+			imported = connectionInfo.isTrusted();
 		} catch (Exception e) {
 			Log.e(TAG, "Couldn't determine trust status", e);
 			imported = false;
@@ -61,6 +68,10 @@ public class ImportFragment extends Fragment {
 		tvStatus.setText(getString(
 				imported ? R.string.certificate_imported : R.string.certificate_not_yet_imported
 		));
+		if (Build.VERSION.SDK_INT >= 17)
+			tvStatus.setCompoundDrawablesRelativeWithIntrinsicBounds(imported ? R.drawable.ic_action_accept : R.drawable.ic_action_warning, 0, 0, 0);
+		else
+			tvStatus.setCompoundDrawablesWithIntrinsicBounds(imported ? R.drawable.ic_action_accept : R.drawable.ic_action_warning, 0, 0, 0);
 	}
 
 

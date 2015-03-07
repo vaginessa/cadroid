@@ -3,25 +3,26 @@
     <string name="app_name">CAdroid</string>
     <string name="menu_item_next">Weiter</string>
     
-    <string name="intro_title">Übersicht</string>
+    <string name="intro_title">1 Übersicht</string>
     <string name="intro_text"><![CDATA[
         <h1>Willkommen bei CAdroid!</h1>
         
-        <p>CAdroid hilft Ihnen dabei, Ihr selbstsigniertes Zertifikat (Einzelzertifikat
-        oder CA mit Unterzertifikaten) in Android zu importieren.</p>
+        <p>CAdroid hilft Ihnen dabei, ein Stammzertifikat (selbstsigniertes Zertifikat oder
+        eigene Zertifizierungsstelle) in Android zu importieren.</p>
         
         <h1>Funktionsweise</h1>
         
-        <p>Nachdem Sie den URL Ihres HTTPS-Servers eingegeben haben, wird das Zertifikat
-        aus der vom Server gesendeten Zertifikatskette geholt und angezeigt. Fehler, die
+        <p>Nachdem Sie den URL Ihres HTTPS-Servers eingegeben haben, wird die Zertifikatskette
+        geholt und Sie können das gewünschte Stammzertifikat auswählen. Fehler, die
         den Import oder die Verwendung des Zertifikats beeinträchtigen können, werden
-        erkannt und angezeigt. Sobald Sie das Zertifikat anhand der Details und der Fingerabdrücke
-        überprüft haben, wird es in eine .crt-Datei exportiert.</p>
+        erkannt und angezeigt.</p>
 
-		<p>Dann können Sie das Zertifikat relativ einfach importieren (Vorgangsweise wird erklärt).</p>        
+        <p>Sobald Sie das Zertifikat anhand der Details und der Fingerabdrücke
+        überprüft haben, wird es in eine .crt-Datei exportiert. Dann können Sie
+        das Zertifikat relativ einfach importieren (Vorgangsweise wird erklärt).</p>
         
         <p>Sobald das Zertifikat korrekt importiert wurde, wird es von (fast) allen Apps
-        akzeptiert, inklusive <a href="http://davdroid.bitfire.at">DAVdroid</a> und der
+        akzeptiert, insbesondere <a href="https://davdroid.bitfire.at">DAVdroid</a> und der
         Android-Standard-Email-App (siehe auch: <a href="https://code.google.com/p/android/issues/detail?id=67038">warum
         Sie dort nicht \"Alle Zertifikate akzeptieren\" einstellen sollten</a>).</p>
         
@@ -30,26 +31,24 @@
         <p>* <a href="http://cadroid.bitfire.at">CAdroid Homepage</a><br />
         * <a href="https://github.com/bitfireAT/cadroid">CAdroid auf Github</a> (Quellcode, Fehlerberichte)</p>
         
-        <p>Copyright (c) 2013 – 2014 Ricki Hirner (<a href="http://www.bitfire.at">bitfire web engineering</a>). Alle Rechte vorbehalten.
+        <p>Copyright (c) 2013 – 2015 Ricki Hirner (<a href="http://www.bitfire.at">bitfire web engineering</a>). Alle Rechte vorbehalten.
         Dieses Programm ist freie Software. Sie können es unter den Bedingungen der <a href="http://www.gnu.org/licenses/gpl.html">GNU
 	  	General Public License Version 3</a>, wie von der Free Software Foundation veröffentlicht, weitergeben und/oder modifizieren.
-	  	Sofern Google Play, Samsung Store, AndroidPit App Center oder Amazon Appstore andere Bedingungen benötigen, gelten für über
+	  	Sofern Google Play, Samsung Store oder Amazon Appstore andere Bedingungen benötigen, gelten für über
 	  	den jeweiligen Markt heruntergeladene Apps diese Bedingungen.</p>
     ]]></string>
     
-    <string name="fetch_title">Zertifikat holen</string>
+    <string name="fetch_title">2 Zertifikat holen</string>
     <string name="fetch_which_url">Von welchem URL soll das Zertifikat geholt werden?</string>
     <string name="fetch">Herunterladen</string>
-    <string name="querying_server">Zertifikat wird geholt…</string>
-    
-    <string name="verify_title">Zertifikat überprüfen</string>
-    <string name="chain_length_not_zero"><![CDATA[
-        Die Zertifikatskette beinhaltet mehr als ein Zertifikat. CAdroid zu verwenden macht in diesem Fall
-        nur Sinn, wenn Ihre Organisation eine eigene Zertifizierungsstelle ist und Unterzertifikate ausstellt.<br/>
-        Das letzte Zertifikat in der empfangenen Kette wird unten angezeigt. Sollten Sie ein anderes Zertifikat
-        an dieser Stelle erwarten, prüfen Sie bitte Ihre Zertifikatskette. Mehrfache Vertrauenspfade
-        werden von CAdroid nicht unterstützt.
-    ]]></string>
+    <string name="querying_server">Server wird abgefragt …</string>
+
+    <string name="select_title">3 Zertifikat auswählen</string>
+    <string name="select_text">Zu importierendes Zertifikat auswählen:</string>
+    <string name="select_invalid_hostname">Die Zertifikatskette beinhaltet kein für den URL-Host ausgestelltes Zertifikat. Benutzen Sie den richtigen Host-Namen oder ändern Sie das entsprechende Zertifikat.</string>
+    <string name="select_already_trusted">Die Zertifikatskette ist bereits vertrauenswürdig. Es muss kein Zertifikat importiert werden.</string>
+
+    <string name="verify_title">4 Zertifikat überprüfen</string>
     <string name="certificate_details">Zertifikats-Inhalt</string>
     <string name="subject_dn">Subjekt (DN):</string>
     <string name="alternative_subject_names">Alternative Bezeichner:</string>
@@ -62,24 +61,23 @@
     <string name="is_a_ca">Ist eine Zertifizierungsstelle (CA-Flag: TRUE), max. Pfadlänge: %s</string>
     <string name="is_not_a_ca">Ist keine Zertifizierungsstelle und darf daher keine Zertifikate ausstellen (CA-Flag: FALSE)!</string>
     <string name="basic_constraints_not_present">Basic Constraints-Erweiterung nicht vorhanden, daher auch kein CA-Flag</string>
-    <string name="alert_hostname_not_matching">Das Zertifikat ist nicht für \"%1$s\" (Host-Name aus dem URL) ausgestellt. Benutzen Sie den richtigen Host-Namen oder ändern Sie das Zertifikat. Sie können auch alternative Bezeichner (subjAltNames) benutzen.</string>
-    <string name="alert_currently_not_valid">Das Zertifikat ist abgelaufen oder noch nicht gültig!</string>
+    <string name="alert_currently_not_valid">Das Zertifikat ist abgelaufen oder noch nicht gültig.</string>
     <string name="alert_is_not_a_ca"><![CDATA[
-        X.509 v3+-Zertifikate können Erweiterungen beinhalten. Eine dieser Erweiterungen ist die Basic Constraints-Erweiterung.
-        Sie beinhaltet ein CA-Flag, das angibt, ob das Subjekt Zertifikate ausstellen darf oder nicht.<br/>
+        <p>X.509 v3+-Zertifikate können die Basic Constraints-Erweiterung enthalten.
+        Sie beinhaltet ein CA-Flag, das angibt, ob das Subjekt Zertifikate ausstellen darf oder nicht.
         Android importiert nur Zertifizierungsstellen mit gesetztem CA-Flag, da es davon ausgeht, dass Subjekte ohne CA-Flag
-        keine Zertifikate ausstellen dürfen, nicht einmal für sich selbst (daher funktionieren auch selbst-signierte einfache
-        Zertifikate ohne CA-Flag nicht).<br/>
-        Das CA-Flag dieses Zertifikats ist nicht gesetzt oder FALSE, sodass Android das Zertifikat zwar ohne Fehlermeldungen importieren,
-        es dann aber nicht funktionieren würde.
+        keine Zertifikate ausstellen dürfen, nicht einmal für sich selbst.</p>
+        <p><b>Das CA-Flag dieses Zertifikats ist nicht TRUE, sodass Android dieses Zertifikat nicht importieren kann.</b>
+        Beim Versuch würde zwar keine Fehlermeldung erscheinen, das Zertifikat würde aber nicht in der Liste auftauchen
+        und wäre nicht benutzbar.</p>
+        <p>Abhilfe: Setzen Sie das CA-Flag, wenn Sie ein selbstsigniertes Zertifikat verwenden.</p>
     ]]></string>
-    <string name="alert_already_trusted">Diesem Zertifikat wird (lokal) bereits vertraut. Es gibt keinen Grund, es zu importieren.</string>
-    
-    <string name="export_title">Zertifikat exportieren</string>
+
+    <string name="export_title">5 Zertifikat exportieren</string>
     <string name="export_successful">Das Zertifikat wurde exportiert. Merken Sie sich den Dateinamen (er könnte im nächsten Schritt verlangt werden):</string>
     <string name="export_failed">Das Zertifikat konnte nicht exportiert werden!</string>
         
-    <string name="import_title">Zertifikat importieren</string>
+    <string name="import_title">6 Zertifikat importieren</string>
     <string name="import_text"><![CDATA[
         <p>Das Zertifikat wurde auf Ihrem "externen Speicher" abgelegt. Sie können es nun über den Android
         Einstellungsdialog, Punkt \"Sicherheit\" importieren:</p>

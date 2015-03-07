@@ -12,12 +12,15 @@
 	        android:id="@+id/import_text"
 	        android:layout_width="fill_parent"
 	        android:layout_height="wrap_content"
+            android:text="@string/import_text"
 	        android:textAppearance="?android:attr/textAppearanceMedium" />
 	
 	    <TextView
 	        android:id="@+id/import_status"
 	        android:layout_width="fill_parent"
 	        android:layout_height="wrap_content"
+            android:text="@string/certificate_not_yet_imported"
+            android:drawablePadding="10dp"
 	        android:textAppearance="?android:attr/textAppearanceLarge" />
 	    
 	</LinearLayout>

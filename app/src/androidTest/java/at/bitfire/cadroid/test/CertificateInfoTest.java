@@ -2,6 +2,7 @@ package at.bitfire.cadroid.test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -9,10 +10,9 @@ import java.security.cert.X509Certificate;
 import android.content.res.AssetManager;
 import android.test.InstrumentationTestCase;
 import at.bitfire.cadroid.CertificateInfo;
+import at.bitfire.cadroid.ConnectionInfo;
 
 public class CertificateInfoTest extends InstrumentationTestCase {
-	//private static final String TAG = "cadroid.CertificateInfoTest";
-	
 	private AssetManager assetManager;
 	private CertificateFactory certificateFactory;
 	
@@ -53,13 +53,21 @@ public class CertificateInfoTest extends InstrumentationTestCase {
 		
 		assertFalse(infoMehlMX.isCA());
 	}
-	
-	public void testIsTrusted() throws Exception {
-		assertFalse(infoDebianTestCA.isTrusted());
-		assertFalse(infoDebianTestNoCA.isTrusted());
-		assertTrue(infoGTECyberTrust.isTrusted());
-		
-		assertFalse(infoMehlMX.isTrusted());
+
+
+	public void testPreinstalledCertificate() throws Exception {
+		ConnectionInfo result = ConnectionInfo.fetch(new URL("https://sni.velox.ch/"));
+		assertEquals("sni.velox.ch", result.getHostName());
+		assertTrue(result.isHostNameMatching());
+		assertTrue(result.isTrusted());
 	}
+
+	public void testSelfSignedUntrustedCertificate() throws Exception {
+		ConnectionInfo result = ConnectionInfo.fetch(new URL("https://www.pcwebshop.co.uk/"));
+		assertEquals("www.pcwebshop.co.uk", result.getHostName());
+		assertFalse(result.isHostNameMatching());
+		assertFalse(result.isTrusted());
+	}
+
 
 }

@@ -6,7 +6,8 @@ import java.security.cert.X509Certificate;
 import javax.net.ssl.X509TrustManager;
 
 import android.util.Log;
-import at.bitfire.cadroid.ConnectionInfo.RootCertificateType;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 public class InfoTrustManager implements X509TrustManager {
 	private static String TAG = "CAdroid.InfoTrustManager";
@@ -24,11 +25,10 @@ public class InfoTrustManager implements X509TrustManager {
 	}
 
 	@Override
-	public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+	public void checkServerTrusted(X509Certificate[] certChain, String authType) throws CertificateException {
 		Log.d(TAG, "checkServerTrusted");
-		
-		info.setRootCertificateType(chain.length > 1 ? RootCertificateType.HIERARCHY : RootCertificateType.STANDALONE);
-		info.setRootCertificate(chain[chain.length - 1]);
+		ArrayUtils.reverse(certChain);
+		info.setCertificates(certChain);
 	}
 
 	@Override
