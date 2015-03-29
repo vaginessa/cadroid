@@ -58,12 +58,12 @@ public class SelectFragment extends ListFragment {
 		// host name matching?
 		if (!connectionInfo.isHostNameMatching()) {
 			mayContinue = false;
-			getListView().addFooterView(getActivity().getLayoutInflater().inflate(R.layout.select_invalid_hostname, null));
+			getListView().addFooterView(getActivity().getLayoutInflater().inflate(R.layout.select_invalid_hostname, null), null, false);
 		} else
 			try {       // already trusted?
 				if (connectionInfo.isTrusted()) {
 					mayContinue = false;
-					getListView().addFooterView(getActivity().getLayoutInflater().inflate(R.layout.select_already_trusted, null));
+					getListView().addFooterView(getActivity().getLayoutInflater().inflate(R.layout.select_already_trusted, null), null, false);
 				}
 			} catch (Exception e) {
 				Log.e(TAG, "Couldn't determine trust status of certificate", e);
@@ -75,7 +75,7 @@ public class SelectFragment extends ListFragment {
 			tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
 			tv.setText(R.string.select_text);
 			tv.setPadding(0, 0, 0, 10);
-			getListView().addHeaderView(tv);
+			getListView().addHeaderView(tv, null, false);
 		}
 	}
 
