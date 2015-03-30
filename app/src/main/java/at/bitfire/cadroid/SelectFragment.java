@@ -79,6 +79,7 @@ public class SelectFragment extends ListFragment {
 			getListView().addHeaderView(tv, null, false);
 		}
 
+		// set list adapter only when header and/or footer view are/is added, so that is compatible for devices with versions below Android 4.4
 		setListAdapter(adapter);
 	}
 
