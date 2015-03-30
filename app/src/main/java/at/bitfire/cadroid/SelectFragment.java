@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.ListAdapter;
 
 import java.security.cert.X509Certificate;
 
@@ -75,7 +76,7 @@ public class SelectFragment extends ListFragment {
 			tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
 			tv.setText(R.string.select_text);
 			tv.setPadding(0, 0, 0, 10);
-			getListView().addHeaderView(tv, null, false);
+			addHeaderToListView(getListView(), tv, null, false);
 		}
 	}
 
@@ -94,4 +95,22 @@ public class SelectFragment extends ListFragment {
 		}
 	}
 
+	private void addHeaderToListView(ListView listView, View headerView, Object data, boolean isSelectable)
+	{
+		ListAdapter adapter = listView.getAdapter();
+
+		// Note: When first introduced, this method could only be called before setting the adapter with setAdapter(ListAdapter).
+		// Starting with KITKAT (Android 4.4), this method may be called at any time.
+		// see https://developer.android.com/reference/android/widget/ListView.html#addHeaderView%28android.view.View%29
+		if (adapter != null) {
+			listView.setAdapter(null);
+		}
+
+		listView.addHeaderView(headerView, data, isSelectable);
+
+		// re-apply list adapter
+		if (adapter != null) {
+			listView.setAdapter(adapter);
+		}
+	}
 }
