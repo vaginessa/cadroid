@@ -19,8 +19,8 @@ public class SelectFragment extends ListFragment {
 	public static final String
 			TAG = "cadroid.Select";
 
-	ArrayAdapter<String> adapter = null;
-	boolean mayContinue = false;
+	private ArrayAdapter<String> adapter = null;
+	private boolean mayContinue = false;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -95,5 +95,11 @@ public class SelectFragment extends ListFragment {
 			main.setIdxSelectedCertificate(position - 1);
 			main.showFragment(VerifyFragment.TAG, true);
 		}
+	}
+
+	@Override
+	public void onDestroyView() {
+		super.onDestroyView();
+		setListAdapter(null);
 	}
 }
