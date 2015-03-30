@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.ListAdapter;
 
 import java.security.cert.X509Certificate;
 
@@ -20,6 +19,7 @@ public class SelectFragment extends ListFragment {
 	public static final String
 			TAG = "cadroid.Select";
 
+	ArrayAdapter<String> adapter = null;
 	boolean mayContinue = false;
 
 	@Override
@@ -27,7 +27,7 @@ public class SelectFragment extends ListFragment {
 		MainActivity main = (MainActivity)getActivity();
 		main.onShowFragment(TAG);
 
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(inflater.getContext(), android.R.layout.simple_list_item_1) {
+		adapter = new ArrayAdapter<String>(inflater.getContext(), android.R.layout.simple_list_item_1) {
 			@Override
 			public View getView(int position, View convertView, ViewGroup parent) {
 				TextView v = (TextView)super.getView(position, convertView, parent);
@@ -42,7 +42,6 @@ public class SelectFragment extends ListFragment {
 		};
 		for (X509Certificate cert : ((MainActivity)getActivity()).getConnectionInfo().getCertificates())
 			adapter.add(new CertificateInfo(cert).getSubjectName());
-		setListAdapter(adapter);
 
 		setHasOptionsMenu(true);
 		return super.onCreateView(inflater, container, savedInstanceState);
@@ -76,7 +75,8 @@ public class SelectFragment extends ListFragment {
 			tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
 			tv.setText(R.string.select_text);
 			tv.setPadding(0, 0, 0, 10);
-			addHeaderToListView(getListView(), tv, null, false);
+			getListView().addHeaderView(tv, null, false);
+			setListAdapter(adapter);
 		}
 	}
 
@@ -92,25 +92,6 @@ public class SelectFragment extends ListFragment {
 			MainActivity main = (MainActivity) getActivity();
 			main.setIdxSelectedCertificate(position - 1);
 			main.showFragment(VerifyFragment.TAG, true);
-		}
-	}
-
-	private void addHeaderToListView(ListView listView, View headerView, Object data, boolean isSelectable)
-	{
-		ListAdapter adapter = listView.getAdapter();
-
-		// Note: When first introduced, this method could only be called before setting the adapter with setAdapter(ListAdapter).
-		// Starting with KITKAT (Android 4.4), this method may be called at any time.
-		// see https://developer.android.com/reference/android/widget/ListView.html#addHeaderView%28android.view.View%29
-		if (adapter != null) {
-			listView.setAdapter(null);
-		}
-
-		listView.addHeaderView(headerView, data, isSelectable);
-
-		// re-apply list adapter
-		if (adapter != null) {
-			listView.setAdapter(adapter);
 		}
 	}
 }
