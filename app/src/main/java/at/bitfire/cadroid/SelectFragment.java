@@ -59,7 +59,7 @@ public class SelectFragment extends ListFragment {
 		if (!connectionInfo.isHostNameMatching()) {
 			mayContinue = false;
 			getListView().addFooterView(getActivity().getLayoutInflater().inflate(R.layout.select_invalid_hostname, null), null, false);
-		} else
+		} else {
 			try {       // already trusted?
 				if (connectionInfo.isTrusted()) {
 					mayContinue = false;
@@ -69,6 +69,7 @@ public class SelectFragment extends ListFragment {
 				Log.e(TAG, "Couldn't determine trust status of certificate", e);
 				mayContinue = false;
 			}
+		}
 
 		if (mayContinue) {
 			TextView tv = new TextView(view.getContext());
@@ -76,8 +77,9 @@ public class SelectFragment extends ListFragment {
 			tv.setText(R.string.select_text);
 			tv.setPadding(0, 0, 0, 10);
 			getListView().addHeaderView(tv, null, false);
-			setListAdapter(adapter);
 		}
+
+		setListAdapter(adapter);
 	}
 
 	@Override
