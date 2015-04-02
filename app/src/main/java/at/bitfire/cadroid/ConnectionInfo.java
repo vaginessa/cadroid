@@ -50,14 +50,20 @@ public class ConnectionInfo implements Parcelable {
 		InfoTrustManager tm = new InfoTrustManager(info);
 		sc.init(null, new X509TrustManager[] { tm }, null);
 
-		HttpsURLConnection.setFollowRedirects(false);
-		HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-		HttpsURLConnection.setDefaultHostnameVerifier(new InfoHostnameVerifier(info));
-
 		Log.i(TAG, "Connecting to URL: " + url);
+
+		// Reusing http connections are buggy with versions before Android 4.1 (API Level 16)
+		// Workaround for poor server configuration:
+		if (Build.VERSION.SDK_INT < 16) {
+			System.setProperty("http.keepAlive", "false");
+		}
+
 		@Cleanup("disconnect") HttpsURLConnection urlConnection = (HttpsURLConnection)url.openConnection();
 		urlConnection.setConnectTimeout(5000);
 		urlConnection.setReadTimeout(20000);
+		urlConnection.setInstanceFollowRedirects(false);
+		urlConnection.setSSLSocketFactory(sc.getSocketFactory());
+		urlConnection.setHostnameVerifier(new InfoHostnameVerifier(info));
 
 		try {
 			@Cleanup InputStream in = urlConnection.getInputStream();
@@ -67,10 +73,16 @@ public class ConnectionInfo implements Parcelable {
 			int c = in.read();
 		} catch(IOException e) {
 			String httpStatus = urlConnection.getHeaderField(null);
-			if (httpStatus != null)
+			if (httpStatus != null) {
 				Log.i(TAG, "HTTP error when fetching resource: " + httpStatus + " (ignoring)");
-			else
+			} else {
 				throw e;
+			}
+		}
+
+		// add an exception if certificates could not be found
+		if (info.getCertificates() == null) {
+			info.exception = new Exception("No certificates found!");
 		}
 
 		return info;
