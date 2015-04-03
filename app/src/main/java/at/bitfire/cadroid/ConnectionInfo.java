@@ -27,13 +27,13 @@ import javax.net.ssl.X509TrustManager;
 public class ConnectionInfo implements Parcelable {
 	private final static String TAG = "cadroid.Fetch";
 	
-	ConnectionInfo() { }
+	private ConnectionInfo() { }
 
 	// host name in URL
 	@Getter @Setter private String hostName;
 	
 	// was there an exception while fetching the certificate?
-	@Getter Exception exception;
+	@Getter private Exception exception;
 	ConnectionInfo(Exception exception) { this.exception = exception; }
 	
 	// certificate details
@@ -71,7 +71,7 @@ public class ConnectionInfo implements Parcelable {
 			@Cleanup InputStream in = urlConnection.getInputStream();
 
 			// read one byte to make sure the connection has been established
-			@SuppressWarnings("unused")
+			//noinspection UnusedAssignment
 			int c = in.read();
 		} catch(IOException e) {
 			String httpStatus = urlConnection.getHeaderField(null);
