@@ -13,6 +13,8 @@ import java.security.cert.X509Certificate;
 import lombok.Cleanup;
 import lombok.Getter;
 import lombok.Setter;
+
+import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
