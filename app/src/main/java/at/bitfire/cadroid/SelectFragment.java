@@ -19,14 +19,15 @@ public class SelectFragment extends ListFragment {
 	public static final String
 			TAG = "cadroid.Select";
 
-	boolean mayContinue = false;
+	private ArrayAdapter<String> adapter = null;
+	private boolean mayContinue = false;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		MainActivity main = (MainActivity)getActivity();
 		main.onShowFragment(TAG);
 
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(inflater.getContext(), android.R.layout.simple_list_item_1) {
+		adapter = new ArrayAdapter<String>(inflater.getContext(), android.R.layout.simple_list_item_1) {
 			@Override
 			public View getView(int position, View convertView, ViewGroup parent) {
 				TextView v = (TextView)super.getView(position, convertView, parent);
@@ -41,7 +42,6 @@ public class SelectFragment extends ListFragment {
 		};
 		for (X509Certificate cert : ((MainActivity)getActivity()).getConnectionInfo().getCertificates())
 			adapter.add(new CertificateInfo(cert).getSubjectName());
-		setListAdapter(adapter);
 
 		setHasOptionsMenu(true);
 		return super.onCreateView(inflater, container, savedInstanceState);
@@ -59,7 +59,7 @@ public class SelectFragment extends ListFragment {
 		if (!connectionInfo.isHostNameMatching()) {
 			mayContinue = false;
 			getListView().addFooterView(getActivity().getLayoutInflater().inflate(R.layout.select_invalid_hostname, null), null, false);
-		} else
+		} else {
 			try {       // already trusted?
 				if (connectionInfo.isTrusted()) {
 					mayContinue = false;
@@ -69,6 +69,7 @@ public class SelectFragment extends ListFragment {
 				Log.e(TAG, "Couldn't determine trust status of certificate", e);
 				mayContinue = false;
 			}
+		}
 
 		if (mayContinue) {
 			TextView tv = new TextView(view.getContext());
@@ -77,6 +78,9 @@ public class SelectFragment extends ListFragment {
 			tv.setPadding(0, 0, 0, 10);
 			getListView().addHeaderView(tv, null, false);
 		}
+
+		// set list adapter only when header and/or footer view are/is added, so that is compatible for devices with versions below Android 4.4
+		setListAdapter(adapter);
 	}
 
 	@Override
@@ -94,4 +98,9 @@ public class SelectFragment extends ListFragment {
 		}
 	}
 
+	@Override
+	public void onDestroyView() {
+		super.onDestroyView();
+		setListAdapter(null);
+	}
 }
