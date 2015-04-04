@@ -9,6 +9,7 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -19,29 +20,13 @@ public class SelectFragment extends ListFragment {
 	public static final String
 			TAG = "cadroid.Select";
 
-	private ArrayAdapter<String> adapter = null;
 	private boolean mayContinue = false;
+
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		MainActivity main = (MainActivity)getActivity();
 		main.onShowFragment(TAG);
-
-		adapter = new ArrayAdapter<String>(inflater.getContext(), android.R.layout.simple_list_item_1) {
-			@Override
-			public View getView(int position, View convertView, ViewGroup parent) {
-				TextView v = (TextView)super.getView(position, convertView, parent);
-				if (Build.VERSION.SDK_INT >= 17)
-					v.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_certificate, 0, 0, 0);
-				else
-					v.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_certificate, 0, 0, 0);
-				v.setPadding(0, 10, 0, 10);
-				v.setCompoundDrawablePadding(10);
-				return v;
-			}
-		};
-		for (X509Certificate cert : ((MainActivity)getActivity()).getConnectionInfo().getCertificates())
-			adapter.add(new CertificateInfo(cert).getSubjectName());
 
 		setHasOptionsMenu(true);
 		return super.onCreateView(inflater, container, savedInstanceState);
@@ -53,6 +38,7 @@ public class SelectFragment extends ListFragment {
 
 		ConnectionInfo connectionInfo = ((MainActivity)getActivity()).getConnectionInfo();
 
+		// set header/footer views first
 		mayContinue = true;
 
 		// host name matching?
@@ -79,7 +65,22 @@ public class SelectFragment extends ListFragment {
 			getListView().addHeaderView(tv, null, false);
 		}
 
-		// set list adapter only when header and/or footer view are/is added, so that is compatible for devices with versions below Android 4.4
+		// set list adapter after adding header/footer views (required by Android <4.4)
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(getListView().getContext(), android.R.layout.simple_list_item_1) {
+			@Override
+			public View getView(int position, View convertView, ViewGroup parent) {
+				TextView v = (TextView)super.getView(position, convertView, parent);
+				if (Build.VERSION.SDK_INT >= 17)
+					v.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_certificate, 0, 0, 0);
+				else
+					v.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_certificate, 0, 0, 0);
+				v.setPadding(0, 10, 0, 10);
+				v.setCompoundDrawablePadding(10);
+				return v;
+			}
+		};
+		for (X509Certificate cert : ((MainActivity)getActivity()).getConnectionInfo().getCertificates())
+			adapter.add(new CertificateInfo(cert).getSubjectName());
 		setListAdapter(adapter);
 	}
 
@@ -100,7 +101,7 @@ public class SelectFragment extends ListFragment {
 
 	@Override
 	public void onDestroyView() {
-		super.onDestroyView();
 		setListAdapter(null);
+		super.onDestroyView();
 	}
 }

@@ -31,11 +31,11 @@ public class ConnectionInfo implements Parcelable {
 
 	// host name in URL
 	@Getter @Setter private String hostName;
-	
+
 	// was there an exception while fetching the certificate?
 	@Getter private Exception exception;
 	ConnectionInfo(Exception exception) { this.exception = exception; }
-	
+
 	// certificate details
 	@Getter @Setter private X509Certificate[] certificates;
 	
@@ -54,11 +54,9 @@ public class ConnectionInfo implements Parcelable {
 
 		Log.i(TAG, "Connecting to URL: " + url);
 
-		// Reusing http connections are buggy with versions before Android 4.1 (API Level 16)
-		// Workaround for poor server configuration:
-		if (Build.VERSION.SDK_INT < 16) {
+		// Reusing HTTP connections is buggy with versions before Android 4.1 (API Level 16)
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN)
 			System.setProperty("http.keepAlive", "false");
-		}
 
 		@Cleanup("disconnect") HttpsURLConnection urlConnection = (HttpsURLConnection)url.openConnection();
 		urlConnection.setConnectTimeout(5000);
@@ -71,21 +69,17 @@ public class ConnectionInfo implements Parcelable {
 			@Cleanup InputStream in = urlConnection.getInputStream();
 
 			// read one byte to make sure the connection has been established
-			//noinspection UnusedAssignment
 			int c = in.read();
 		} catch(IOException e) {
 			String httpStatus = urlConnection.getHeaderField(null);
-			if (httpStatus != null) {
+			if (httpStatus != null)
 				Log.i(TAG, "HTTP error when fetching resource: " + httpStatus + " (ignoring)");
-			} else {
+			else
 				throw e;
-			}
 		}
 
-		// add an exception if certificates could not be found
-		if (info.getCertificates() == null) {
-			info.exception = new Exception("No certificates found!");
-		}
+		if (info.getCertificates() == null)
+			throw new IOException("No certificates found!");
 
 		return info;
 	}
