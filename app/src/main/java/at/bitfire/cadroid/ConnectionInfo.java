@@ -21,6 +21,7 @@ import android.util.Log;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
@@ -52,6 +53,16 @@ public class ConnectionInfo implements Parcelable {
 		InfoTrustManager tm = new InfoTrustManager(info);
 		sc.init(null, new X509TrustManager[] { tm }, null);
 
+		SSLSocketFactory sslSocketFactory = null;
+
+		// SSLSocketFactory must be wrapped for versions below Android 5.0 (API Level 21) to use TLSv1.2 and TLSv1.1
+		// The implementation does not apply for Android 4.0 (API Level 15)
+		if (Build.VERSION.SDK_INT < 21) {
+			sslSocketFactory = new TLSSocketFactory(sc.getSocketFactory());
+		} else {
+			sslSocketFactory = sc.getSocketFactory();
+		}
+
 		Log.i(TAG, "Connecting to URL: " + url);
 
 		// Reusing HTTP connections is buggy with versions before Android 4.1 (API Level 16)
@@ -62,7 +73,7 @@ public class ConnectionInfo implements Parcelable {
 		urlConnection.setConnectTimeout(5000);
 		urlConnection.setReadTimeout(20000);
 		urlConnection.setInstanceFollowRedirects(false);
-		urlConnection.setSSLSocketFactory(sc.getSocketFactory());
+		urlConnection.setSSLSocketFactory(sslSocketFactory);
 		urlConnection.setHostnameVerifier(new InfoHostnameVerifier(info));
 
 		try {
