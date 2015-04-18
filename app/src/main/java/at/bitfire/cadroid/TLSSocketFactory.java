@@ -91,7 +91,7 @@ public class TLSSocketFactory extends SSLSocketFactory {
 
 	private static String[] getPreferredProtocols(SSLSocket sslSocket) {
 		// Just reverse the order of the supported protocols
-		// btw: Android versions below 4.1 do not support TLSv1.2 and TLS1.1
+		// btw: Android versions below 4.1 do not support TLSv1.2 and TLSv1.1
 		List<String> preferredProtocols = Arrays.asList(sslSocket.getSupportedProtocols());
 		Collections.reverse(preferredProtocols);
 		return preferredProtocols.toArray(new String[0]);
