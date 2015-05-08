@@ -21,7 +21,6 @@ import android.util.Log;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
@@ -65,7 +64,7 @@ public class ConnectionInfo implements Parcelable {
 		urlConnection.setConnectTimeout(5000);
 		urlConnection.setReadTimeout(20000);
 		urlConnection.setInstanceFollowRedirects(false);
-		urlConnection.setHostnameVerifier(new InfoHostnameVerifier(info));
+		urlConnection.setHostnameVerifier(new InfoHostnameVerifier(urlConnection.getHostnameVerifier(), info));
 
 		SSLSocketFactory socketFactory = sc.getSocketFactory();
 		// Before Android 5.0 (Lollipop), the default SSL socket factory doesn't
