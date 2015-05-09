@@ -1,5 +1,10 @@
 package at.bitfire.cadroid;
 
+import android.os.Build;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -10,20 +15,15 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-import lombok.Cleanup;
-import lombok.Getter;
-import lombok.Setter;
-
-import android.os.Build;
-import android.os.Parcel;
-import android.os.Parcelable;
-import android.util.Log;
-
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
+
+import lombok.Cleanup;
+import lombok.Getter;
+import lombok.Setter;
 
 public class ConnectionInfo implements Parcelable {
 	private final static String TAG = "cadroid.Fetch";
@@ -60,7 +60,7 @@ public class ConnectionInfo implements Parcelable {
 			System.setProperty("http.keepAlive", "false");
 
 		@Cleanup("disconnect") HttpsURLConnection urlConnection = (HttpsURLConnection)url.openConnection();
-		urlConnection.setRequestProperty("User-Agent", "CAdroid/1.0.2");
+		urlConnection.setRequestProperty("User-Agent", "CAdroid/1.0.3");
 		urlConnection.setConnectTimeout(5000);
 		urlConnection.setReadTimeout(20000);
 		urlConnection.setInstanceFollowRedirects(false);

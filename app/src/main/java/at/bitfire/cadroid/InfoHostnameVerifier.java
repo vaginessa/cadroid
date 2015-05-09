@@ -3,12 +3,11 @@ package at.bitfire.cadroid;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
 
-import org.apache.http.conn.ssl.BrowserCompatHostnameVerifier;
-
 /**
  * Wrapper around a given HostnameVerifier
- * that set the requested host name (from the URL, not the certificate CN)
- * and whether the certificate's names match this host name
+ * that sets
+ *   - the requested host name (from the URL, not the certificate CN), and
+ *    - whether the certificate's names match this host name
  * to ConnectionInfo for further processing
  */
 public class InfoHostnameVerifier implements HostnameVerifier {
@@ -18,7 +17,6 @@ public class InfoHostnameVerifier implements HostnameVerifier {
 	
 	
 	InfoHostnameVerifier(HostnameVerifier defaultVerifier, ConnectionInfo info) {
-		super();
 		this.defaultVerifier = defaultVerifier;
 		this.info = info;
 	}
