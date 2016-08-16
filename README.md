@@ -4,6 +4,8 @@
 CAdroid is intended to assist you in importing your own CA or self-signed certificate
 to your Android device.
 
+News, updates and more info: [CAdroid forum](https://forums.bitfire.at/category/2/cadroid)
+
 
 ### Download
 
@@ -30,16 +32,16 @@ apps, including [DAVdroid](https://davdroid.bitfire.at) and the Android email ap
 ### Donations
 
 As this software is free and open-source software, we're asking for donations.
-Please see http://davdroid.bitfire.at/donate for details.
+Please see https://davdroid.bitfire.at/donate for details.
 
         
 ### Further info
 
 * [CAdroid home page](http://cadroid.bitfire.at)
-* [Github page](https://github.com/bitfireAT/cadroid) (source code, issues)
+* [Github page](https://github.com/bitfireAT/cadroid) (source code)
 * [SSL server test](https://www.ssllabs.com/ssltest/): check your server configuration in case of errors
- 
-Follow us on Twitter: [@davdroidapp](http://twitter.com/davdroidapp)
+
+For more information and discussion, see our [CAdroid forum](https://forums.bitfire.at/category/2/cadroid).
  
 Copyright (c) 2013 – 2015 Ricki Hirner ([bitfire web engineering](http://www.bitfire.at)). All rights reserved.
 This program and the accompanying materials are made available under the terms of the GNU Public License v3.0 which accompanies this distribution, and is available at [http://www.gnu.org/licenses/gpl.html](http://www.gnu.org/licenses/gpl.html).
