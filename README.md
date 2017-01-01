@@ -4,6 +4,8 @@
 CAdroid is intended to assist you in importing your own CA or self-signed certificate
 to your Android device.
 
+**This app is _not_ required to use self-signed or custom certificates with [DAVdroid](https://davdroid.bitfire.at)!**
+
 News, updates and more info: [CAdroid forum](https://forums.bitfire.at/category/2/cadroid)
 
 
